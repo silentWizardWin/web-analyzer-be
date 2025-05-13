@@ -64,6 +64,13 @@ go tool cover -html=coverage.out -o coverage.html
 
 **POST /analyze**
 
+```
+curl --location 'localhost:8080/analyze'
+--data '{
+    "url": "https://www.gmail.com"
+}'
+```
+
 ### Request Payload
 
 ```json
