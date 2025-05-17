@@ -10,16 +10,16 @@ web-analyzer-be/
 ├── go.sum
 ├── cmd/
 │   └── server/
-│       └── main.go             # entry point
+│       └── main.go                     # entry point
 ├── internal/
 │   ├── handler/
-│   │   └── analyze.go          # HTTP handler for /analyze
+│   │   └── analyze_handler.go          # HTTP handler for /analyze
 │   ├── service/
-│   │   └── analyzer.go         # business logic
+│   │   └── analyze_service.go          # business logic
 │   ├── util/
-│   │   └── util.go             # HTML parsing helpers
+│   │   └── util.go                     # HTML parsing helpers
 │   └── model/
-│       └── types.go            # request/response structs
+│       └── types.go                    # request/response structs
 ├── README.md
 ```
 
