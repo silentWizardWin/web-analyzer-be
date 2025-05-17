@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 
 	"golang.org/x/net/html"
 	"web-analyzer-be/internal/model"
@@ -117,10 +118,33 @@ func containsKeyword(n *html.Node, keywords []string) bool {
 	return false
 }
 
-
 func AnalyzeLinks(doc *html.Node, baseURL string) model.LinkAnalysis {
-	internal, external, broken := 0, 0, 0
-	visited := make(map[string]bool)
+	var (
+		internal, external, broken int
+		mu                         sync.Mutex
+		visited                    = make(map[string]bool)
+		wg                         sync.WaitGroup
+		sem                        = make(chan struct{}, 10) // 10 concurrent requests
+	)
+
+	processLink := func(absURL string) {
+		defer wg.Done()
+		sem <- struct{}{}
+		defer func() { <-sem }()
+
+		isBroken := !isAccessible(absURL)
+
+		mu.Lock()
+		defer mu.Unlock()
+		if strings.HasPrefix(absURL, baseURL) {
+			internal++
+		} else {
+			external++
+		}
+		if isBroken {
+			broken++
+		}
+	}
 
 	var f func(*html.Node)
 	f = func(n *html.Node) {
@@ -132,19 +156,15 @@ func AnalyzeLinks(doc *html.Node, baseURL string) model.LinkAnalysis {
 						continue
 					}
 					absURL := resolveURL(href, baseURL)
+					mu.Lock()
 					if visited[absURL] {
+						mu.Unlock()
 						continue
 					}
 					visited[absURL] = true
-
-					if strings.HasPrefix(absURL, baseURL) {
-						internal++
-					} else {
-						external++
-					}
-					if !isAccessible(absURL) {
-						broken++
-					}
+					mu.Unlock()
+					wg.Add(1)
+					go processLink(absURL)
 				}
 			}
 		}
@@ -154,6 +174,7 @@ func AnalyzeLinks(doc *html.Node, baseURL string) model.LinkAnalysis {
 	}
 	f(doc)
 
+	wg.Wait()
 	return model.LinkAnalysis{
 		InternalLinks:     internal,
 		ExternalLinks:     external,

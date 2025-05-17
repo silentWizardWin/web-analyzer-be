@@ -17,7 +17,7 @@ web-analyzer-be/
 │   ├── service/
 │   │   └── analyzer.go         # business logic
 │   ├── util/
-│   │   └── html_utils.go       # HTML parsing helpers
+│   │   └── util.go             # HTML parsing helpers
 │   └── model/
 │       └── types.go            # request/response structs
 ├── README.md
@@ -58,7 +58,7 @@ go tool cover -html=coverage.out -o coverage.html
 | `main.go`             |    100 %   |
 | `handler/analyze.go`  |     84 %   |
 | `service/analyzer.go` |     75 %   |
-| `util.go`             |     86 %   |
+| `util.go`             |     87 %   |
 
 ## Endpoint
 
